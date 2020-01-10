@@ -4,6 +4,7 @@ import com.empresa.springboot.backend.apirest.models.entity.Cliente;
 import com.empresa.springboot.backend.apirest.models.services.ClienteDto;
 import com.empresa.springboot.backend.apirest.models.services.ClienteService;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.List;
 
@@ -24,44 +26,49 @@ import java.util.List;
 public class ClienteRestController {
 
     private ClienteService clienteService;
-    /*private ModelMapper modelMapper;
+    private ModelMapper modelMapper;
 
     public ClienteRestController(ClienteService clienteService, ModelMapper modelMapper) {
         this.clienteService = clienteService;
         this.modelMapper = modelMapper;
-    }*/
+    }
 
     @GetMapping("/clientes")
-    public List<Cliente> index(){
-        return clienteService.findAll();
+    public List<ClienteDto> index(){
+        Type listType = new TypeToken<List<ClienteDto>>(){}.getType();
+        List<ClienteDto> clienteDtoList = modelMapper.map(clienteService.findAll(),listType);
+        return clienteDtoList;
     }
 
     @GetMapping("/clientes/{id}")
-    public Cliente show(@PathVariable Long id){
-        return clienteService.findById(id);
+    public ClienteDto show(@PathVariable Long id){
+        ClienteDto clienteDto = modelMapper.map(clienteService.findById(id), ClienteDto.class);
+        return clienteDto;
     }
 
-   /* @PostMapping
-    @RequestMapping("/clientes")
-    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/clientes")
     public ResponseEntity<ClienteDto> create(@RequestBody @Valid ClienteDto clienteDto){
         clienteDto.setFecha(new Date());
         Cliente clienteCreate = clienteService.save(clienteDto);
         ClienteDto clienteMapper = modelMapper.map(clienteCreate, ClienteDto.class);
-        return new ResponseEntity<ClienteDto>(clienteMapper, null);
-    }*/
+        return new ResponseEntity<ClienteDto>(clienteMapper, null,HttpStatus.CREATED);
+    }
 
-   /* @PutMapping("/clientes/{id}")
+    @PutMapping("/clientes/{id}")
     @ResponseStatus(HttpStatus.CREATED)
-    public Cliente update(@RequestBody Cliente cliente, @PathVariable Long id){
+    public ClienteDto update(@RequestBody ClienteDto clienteDto, @PathVariable Long id){
         Cliente clienteActual = clienteService.findById(id);
+        ClienteDto clienteDtoMapper = modelMapper.map(clienteActual, ClienteDto.class);
 
-        clienteActual.setNombre(cliente.getNombre());
-        clienteActual.setApellido(cliente.getApellido());
-        clienteActual.setEmail(cliente.getEmail());
+        clienteDtoMapper.setNombre(clienteDto.getNombre());
+        clienteDtoMapper.setApellido(clienteDto.getApellido());
+        clienteDtoMapper.setEmail(clienteDto.getEmail());
 
-        return clienteService.save(clienteActual);
-    }*/
+        Cliente clienteModificado = clienteService.save(clienteDtoMapper);
+        clienteDtoMapper = modelMapper.map(clienteModificado, ClienteDto.class);
+
+        return clienteDtoMapper;
+    }
 
     @DeleteMapping("/clientes/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

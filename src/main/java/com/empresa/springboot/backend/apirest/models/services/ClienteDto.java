@@ -10,6 +10,8 @@ public class ClienteDto {
     private Date fecha;
     private String email;
 
+    public ClienteDto(){}
+
     public ClienteDto(long id, String nombre, String apellido, Date fecha, String email) {
         this.id = id;
         this.nombre = nombre;
